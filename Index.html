@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Birthday System Initialised</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #05050a;
+            color: #00ffcc;
+            font-family: 'Courier New', Courier, monospace;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        #matrix-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            opacity: 0.15;
+        }
+
+        .card-container {
+            position: relative;
+            z-index: 2;
+            width: 380px;
+            height: 520px;
+            perspective: 1000px;
+        }
+
+        .card {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            transform-style: preserve-3d;
+            transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+        }
+
+        .card.is-flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border: 2px solid #00ffcc;
+            border-radius: 16px;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: 0 0 25px rgba(0, 255, 204, 0.2), inset 0 0 15px rgba(0, 255, 204, 0.1);
+            background: rgba(10, 15, 30, 0.85);
+            backdrop-filter: blur(10px);
+        }
+
+        /* --- FRONT FACE --- */
+        .card-front {
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .ai-core {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 3px double #00ffcc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 30px;
+            position: relative;
+            animation: pulse 3s infinite ease-in-out;
+            box-shadow: 0 0 20px rgba(0, 255, 204, 0.4);
+        }
+
+        .ai-core::before {
+            content: '';
+            position: absolute;
+            width: 140px;
+            height: 140px;
+            border: 1px dashed #0077ff;
+            border-radius: 50%;
+            animation: spin 10s linear infinite;
+        }
+
+        .core-text {
+            font-size: 24px;
+            font-weight: bold;
+            text-shadow: 0 0 10px #00ffcc;
+        }
+
+        .system-status {
+            font-size: 13px;
+            color: #0077ff;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 15px;
+        }
+
+        .front-title {
+            font-size: 22px;
+            letter-spacing: 1px;
+            line-height: 1.4;
+        }
+
+        .click-hint {
+            margin-top: 40px;
+            font-size: 11px;
+            color: #888;
+            animation: blink 1.5s infinite;
+        }
+
+        /* --- BACK FACE --- */
+        .card-back {
+            transform: rotateY(180deg);
+            justify-content: flex-start;
+        }
+
+        .terminal-header {
+            border-bottom: 1px dashed #00ffcc;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            font-size: 12px;
+            color: #0077ff;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .terminal-body {
+            flex-grow: 1;
+            font-size: 15px;
+            line-height: 1.6;
+            color: #e0fbf5;
+        }
+
+        .cursor {
+            display: inline-block;
+            width: 8px;
+            height: 15px;
+            background: #00ffcc;
+            animation: blink 0.8s infinite;
+            vertical-align: middle;
+            margin-left: 4px;
+        }
+
+        .terminal-footer {
+            border-top: 1px dashed #0077ff;
+            padding-top: 15px;
+            font-size: 11px;
+            color: #0077ff;
+            text-align: right;
+        }
+
+        /* --- ANIMATIONS --- */
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 20px rgba(0, 255, 204, 0.4); }
+            50% { transform: scale(1.05); box-shadow: 0 0 35px rgba(0, 255, 204, 0.7); }
+        }
+
+        @keyframes spin {
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 0; }
+            50% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="matrix-bg"></canvas>
+
+    <div class="card-container">
+        <div class="card" id="birthdayCard" onclick="flipCard()">
+            <!-- Front Face -->
+            <div class="card-face card-front">
+                <div class="system-status">System: Ready</div>
+                <div class="ai-core">
+                    <div class="core-text">AI</div>
+                </div>
+                <h2 class="front-title">GENERATE_BIRTHDAY_WISHES<br><span style="color:#0077ff;">[SUCCESS]</span></h2>
+                <div class="click-hint">CLICK TO EXECUTE & RUN CORE</div>
+            </div>
+
+            <!-- Back Face -->
+            <div class="card-face card-back">
+                <div class="terminal-header">
+                    <span>LOG_MODULE: WISH_GEN_V2.0</span>
+                    <span id="timestamp"></span>
+                </div>
+                <div class="terminal-body">
+                    <span id="typing-container"></span><span class="cursor"></span>
+                </div>
+                <div class="terminal-footer">
+                    <span>Status: Celebration Mode Active</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 1. Matrix Binary Rain Background Effect
+        const canvas = document.getElementById('matrix-bg');
+        const ctx = canvas.getContext('2d');
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        const binary = "01";
+        const fontSize = 14;
+        const columns = canvas.width / fontSize;
+        const rainDrops = Array(Math.floor(columns)).fill(1);
+
+        function drawMatrix() {
+            ctx.fillStyle = 'rgba(5, 5, 10, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = '#00ffcc';
+            ctx.font = fontSize + 'px monospace';
+
+            for (let i = 0; i < rainDrops.length; i++) {
+                const text = binary.charAt(Math.floor(Math.random() * binary.length));
+                ctx.fillText(text, i * fontSize, rainDrops[i] * fontSize);
+
+                if (rainDrops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                    rainDrops[i] = 0;
+                }
+                rainDrops[i]++;
+            }
+        }
+        setInterval(drawMatrix, 33);
+
+        // Set Current Timestamp on Card
+        document.getElementById('timestamp').innerText = new Date().toLocaleTimeString();
+
+        // 2. Typing Effect Configuration
+        const wishText = `> Initialising birthday algorithms...\n> Accessing neural network parameters...\n\nHello Friend!\n\nMy machine learning data models indicate today is a highly significant milestone. May your source code remain bug-free, your internal processing power scale to infinite capacity, and your daily environment variables bring you immense happiness.\n\nHappy Birthday! Keep updating your personal operating system for greatness.`;
+        
+        let index = 0;
+        let hasTyped = false;
+        const container = document.getElementById('typing-container');
+
+        function typeMessage() {
+            if (index < wishText.length) {
+                let char = wishText.charAt(index);
+                // Convert newlines to HTML line breaks
+                if (char === '\n') {
+                    container.innerHTML += '<br>';
+                } else {
+                    container.innerHTML += char;
+                }
+                index++;
+                setTimeout(typeMessage, 35); // Speed of typing
+            }
+        }
+
+        // 3. Card Flip Handler
+        function flipCard() {
+            const card = document.getElementById('birthdayCard');
+            card.classList.toggle('is-flipped');
+            
+            // Start the custom neural log printout only once upon card flip
+            if (!hasTyped && card.classList.contains('is-flipped')) {
+                hasTyped = true;
+                setTimeout(typeMessage, 600); // Small pause for flip transition animation
+            }
+        }
+    </script>
+</body>
+</html>
